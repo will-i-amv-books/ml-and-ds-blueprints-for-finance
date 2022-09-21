@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from typing import Union, List
+from typing import Dict, Union, List
 
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import KFold, cross_val_score
+from sklearn.model_selection import KFold, cross_val_score, GridSearchCV
 from sklearn.linear_model import LinearRegression, Lasso, ElasticNet
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.neighbors import KNeighborsRegressor
@@ -74,3 +74,43 @@ def run_kfold_analysis(params: ParamsKfold) -> ResultKfold:
         print(f"{name}: {cv_results.mean():.6f} ({cv_results.std():.6f}) {train_result:.6f} {test_result:.6f}")
 
     return ResultKfold(names, kfold_results, train_results, test_results)
+
+
+@dataclass
+class ParamsGridSearch:
+    model: SKlearnModels
+    params_grid: Dict[str, List]
+    X_train: pd.DataFrame
+    Y_train: pd.Series
+    X_test: pd.DataFrame
+    Y_test: pd.Series
+    num_folds: int
+    scoring: int
+    seed: int = 0
+    shuffle: bool = False
+
+
+def run_grid_search(params: ParamsGridSearch) -> GridSearchCV:
+    kfold = (
+        KFold(n_splits=params.num_folds, shuffle=True, random_state=params.seed)
+        if params.shuffle else
+        KFold(n_splits=params.num_folds)
+    )
+    grid = GridSearchCV(
+        estimator=params.model, 
+        param_grid=params.params_grid, 
+        scoring=params.scoring, 
+        cv=kfold
+    )
+    grid_result = grid.fit(params.X_train, params.Y_train)
+    print(f"Best: {grid_result.best_score_:.6f} using {grid_result.best_params_}")
+
+    for mean, stdev, param in zip(
+        grid_result.cv_results_['mean_test_score'], 
+        grid_result.cv_results_['std_test_score'], 
+        grid_result.cv_results_['params']
+    ):
+        print(f"{mean:.6f} ({stdev:.6f}) with: {param}")
+
+    return grid_result
+
