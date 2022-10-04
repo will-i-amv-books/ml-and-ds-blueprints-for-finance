@@ -10,6 +10,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.svm import SVR
 from sklearn.neural_network import MLPRegressor
+from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn.ensemble import (
     RandomForestRegressor, GradientBoostingRegressor, 
     ExtraTreesRegressor, AdaBoostRegressor
@@ -114,3 +115,16 @@ def run_grid_search(params: ParamsGridSearch) -> GridSearchCV:
 
     return grid_result
 
+
+def calc_best_features(X: pd.DataFrame, Y: pd.DataFrame) -> None:
+    best_features = SelectKBest(k=5, score_func=f_regression)
+    for col in Y.columns:
+        fit = best_features.fit(X, Y[col])
+        df_scores = pd.DataFrame(fit.scores_)
+        df_columns = pd.DataFrame(X.columns)
+
+        # Concat two dataframes for better visualization
+        feature_scores = pd.concat([df_columns, df_scores], axis=1)
+        feature_scores.columns = ['Specs', 'Score']
+        print('----------------------------------------------------------------')
+        print(feature_scores.nlargest(10, 'Score').set_index('Specs'))
