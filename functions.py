@@ -1,8 +1,11 @@
 from dataclasses import dataclass
-from typing import Dict, Union, List
+from typing import Union, Tuple, Dict, List
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
+from pandas.plotting import scatter_matrix
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import KFold, cross_val_score, GridSearchCV
 from sklearn.linear_model import LinearRegression, Lasso, ElasticNet
@@ -15,6 +18,7 @@ from sklearn.ensemble import (
     RandomForestRegressor, GradientBoostingRegressor, 
     ExtraTreesRegressor, AdaBoostRegressor
 )
+import statsmodels.api as sm
 
 
 SKlearnModels =Union[
@@ -132,3 +136,50 @@ def calc_best_features(
         feature_scores.columns = ['Specs', 'Score']
         print('----------------------------------------------------------------')
         print(feature_scores.nlargest(10, 'Score').set_index('Specs'))
+
+
+def show_corr_matrix(dataset: pd.DataFrame, figsize: Tuple = (15, 15)) -> None:
+    correlation = dataset.corr()
+    plt.figure(figsize=figsize)
+    plt.title('Correlation Matrix')
+    sns.heatmap(correlation, vmax=1, square=True, annot=True, cmap='cubehelix')
+
+
+def show_scatter_matrix(dataset: pd.DataFrame) -> None:
+    plt.figure(figsize=(15, 15))
+    scatter_matrix(dataset, figsize=(12, 12))
+    plt.show()
+
+
+def show_seasonal_decomposition(Y: pd.Series) -> None:
+    res = sm.tsa.seasonal_decompose(Y, period=52)
+    fig = res.plot()
+    fig.set_figheight(8)
+    fig.set_figwidth(15)
+    plt.show()
+
+
+def show_boxplot_kfold(results: ResultKfold) -> None:
+    fig = plt.figure()
+    fig.suptitle('Algorithm Comparison: Kfold results')
+    ax = fig.add_subplot(111)
+    plt.boxplot(results.kfold_results)
+    ax.set_xticklabels(results.names)
+    fig.set_size_inches(15, 8)
+    plt.show()
+
+
+def show_bar_kfold(results: ResultKfold, title: str = 'Algorithm Comparison') -> None:
+    fig = plt.figure()
+    ind = np.arange(len(results.names))  # the x locations for the groups
+    width = 0.35  # the width of the bars
+
+    fig.suptitle(title)
+    ax = fig.add_subplot(111)
+    plt.bar(ind - (width/2), results.train_results, width=width, label='Train Error')
+    plt.bar(ind + (width/2), results.test_results, width=width, label='Test Error')
+    fig.set_size_inches(15, 8)
+    plt.legend()
+    ax.set_xticks(ind)
+    ax.set_xticklabels(results.names)
+    plt.show()
