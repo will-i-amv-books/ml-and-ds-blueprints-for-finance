@@ -116,8 +116,12 @@ def run_grid_search(params: ParamsGridSearch) -> GridSearchCV:
     return grid_result
 
 
-def calc_best_features(X: pd.DataFrame, Y: pd.DataFrame) -> None:
-    best_features = SelectKBest(k=5, score_func=f_regression)
+def calc_best_features(
+    X: pd.DataFrame, 
+    Y: pd.DataFrame, 
+    n_features: Union[int, str] = 5
+) -> None:
+    best_features = SelectKBest(k=n_features, score_func=f_regression)
     for col in Y.columns:
         fit = best_features.fit(X, Y[col])
         df_scores = pd.DataFrame(fit.scores_)
