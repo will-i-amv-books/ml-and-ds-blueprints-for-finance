@@ -25,6 +25,21 @@ SKlearnModels =Union[
     LinearRegression, Lasso, ElasticNet, KNeighborsRegressor, DecisionTreeRegressor, SVR, MLPRegressor, 
     AdaBoostRegressor, GradientBoostingRegressor, RandomForestRegressor, ExtraTreesRegressor,
 ]
+LINEAR_MODELS = [
+    ('LR', LinearRegression()),
+    ('LASSO', Lasso()),
+    ('EN', ElasticNet()),
+    ('KNN', KNeighborsRegressor()),
+    ('CART', DecisionTreeRegressor()),
+    ('SVR', SVR()),
+]
+NEURAL_NETWORK_MODELS = [('MLP', MLPRegressor())]
+ENSEMBLE_MODELS = [
+    ('ABR', AdaBoostRegressor()),
+    ('GBR', GradientBoostingRegressor()),
+    ('RFR', RandomForestRegressor()),
+    ('ETR', ExtraTreesRegressor()),
+]
 
 
 @dataclass
